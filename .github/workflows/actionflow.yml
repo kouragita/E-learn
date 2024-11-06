@@ -1,0 +1,88 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to the main branch
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Backend Setup and Testing
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies
+        run: |
+          cd server
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Uncomment the following line to run Flask Backend Tests when ready
+      # - name: Run Flask Backend Tests
+      #   run: |
+      #     cd server
+      #     pytest  # Adjust if using a different test command
+
+      # Frontend Setup and Testing
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Updated to use Node.js version 20
+
+      - name: Install Node dependencies
+        run: |
+          cd client
+          npm install
+
+      # Uncomment the following line to run React Frontend Tests when ready
+      # - name: Run React Frontend Tests
+      #   run: |
+      #     cd client
+      #     npm test  # Adjust if using a different test command
+
+  deploy:
+    name: Deploy to Render
+    needs: test  # Run only if the test job succeeds
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger Flask Deployment on Render
+        env:
+          WEBHOOK_URL: ${{ secrets.RENDER_FLASK_WEBHOOK }}
+        run: |
+          curl -X POST "$WEBHOOK_URL"
+
+      - name: Trigger React Deployment on Render
+        env:
+          WEBHOOK_URL: ${{ secrets.RENDER_REACT_WEBHOOK }}
+        run: |
+          curl -X POST "$WEBHOOK_URL"
+
