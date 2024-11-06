@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 api = Api(app)
-CORS(app)
+CORS(app)   #cors is an online tool
 
 app.config['SQLALCHEMY_DATABASE_URI'] = '	YOURDATBASE EXTERNAL URI'  # Example URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
