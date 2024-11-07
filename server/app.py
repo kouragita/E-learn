@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from models import badge, learning_path, quiz, progress, resource, role, user
 from flask_migrate import Migrate
 from models.db import db  # Import db directly
 import os
@@ -10,7 +11,7 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = '	YOURDATBASE EXTERNAL URI'  # Example URI
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elearndb_user:ynYdjBgjF34gfqDJgmVGHKVvDNHu2XlU@dpg-csm7n0lumphs73ck0jj0-a.oregon-postgres.render.com/elearndb'  # Example URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 migrate = Migrate(app, db)
