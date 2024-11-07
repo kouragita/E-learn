@@ -1,29 +1,28 @@
-from .. import models
+from . import db
 
-class User(models.Model):
-    __tablename__ = 'users'
-    id = models.Column(models.Integer, primary_key=True)
-    username = models.Column(models.String(80), unique=True, nullable=False)
-    password = models.Column(models.String(120), nullable=False)
-    role_id = models.Column(models.Integer, models.ForeignKey('roles.id'), nullable=False)
-    created_at = models.Column(models.DateTime, default=models.func.current_timestamp())
+class User(db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    profile = db.relationship('UserProfile', uselist=False, back_populates="user")
+    role = db.relationship('Role', back_populates="users")
+    learning_paths = db.relationship('UserLearningPath', back_populates="user")
+    achievements = db.relationship('Achievement', back_populates="user")
+    comments = db.relationship('Comment', back_populates="user")
+    ratings = db.relationship('Rating', back_populates="user")
+    progress = db.relationship('Progress', back_populates="user")
 
-    profile = models.relationship('UserProfile', uselist=False, back_populates='user')
-    role = models.relationship('Role', back_populates='users')
-    learning_paths = models.relationship('UserLearningPath', back_populates='user')
-    comments = models.relationship('Comment', back_populates='user')
-    ratings = models.relationship('Rating', back_populates='user')
-    achievements = models.relationship('Achievement', back_populates='user')
-    progresses = models.relationship('Progress', back_populates='user')
-
-
-class UserProfile(models.Model):
-    __tablename__ = 'user_profiles'
-    user_id = models.Column(models.Integer, models.ForeignKey('users.id'), primary_key=True)
-    points = models.Column(models.Integer, default=0)
-    xp = models.Column(models.Integer, default=0)
-    bio = models.Column(models.String(250))
-    avatar_url = models.Column(models.String(250))
-    last_active = models.Column(models.DateTime)
-
-    user = models.relationship('User', back_populates='profile')
+class UserProfile(db.Model):
+    __tablename__ = 'user_profile'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    points = db.Column(db.Integer, default=0)
+    xp = db.Column(db.Integer, default=0)
+    bio = db.Column(db.String)
+    avatar_url = db.Column(db.String)
+    last_active = db.Column(db.DateTime)
+    
+    user = db.relationship('User', back_populates="profile")
