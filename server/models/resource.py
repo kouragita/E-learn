@@ -14,7 +14,6 @@ class Resource(db.Model):
     comments = db.relationship('Comment', back_populates="resource")
     ratings = db.relationship('Rating', back_populates="resource")
     
-
 class Comment(db.Model):
     __tablename__ = 'comment'
     id = db.Column(db.Integer, primary_key=True)
@@ -36,4 +35,3 @@ class Rating(db.Model):
     
     user = db.relationship('User', back_populates="ratings")
     resource = db.relationship('Resource', back_populates="ratings")
-
