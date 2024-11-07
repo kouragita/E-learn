@@ -10,12 +10,11 @@ class Resource(models.Model):
     description = models.Column(models.Text)
     module_id = models.Column(models.Integer, models.ForeignKey('module.id'))
     
-    module = models.relationship('Module', back_populates="resources")
-    comments = models.relationship('Comment', back_populates="resource")
-    ratings = models.relationship('Rating', back_populates="resource")
+    module = db.relationship('Module', back_populates="resources")
+    comments = db.relationship('Comment', back_populates="resource")
+    ratings = db.relationship('Rating', back_populates="resource")
     
-
-class Comment(models.Model):
+class Comment(db.Model):
     __tablename__ = 'comment'
     id = models.Column(models.Integer, primary_key=True)
     content = models.Column(models.Text, nullable=False)
@@ -34,6 +33,5 @@ class Rating(models.Model):
     resource_id = models.Column(models.Integer, models.ForeignKey('resource.id'))
     created_at = models.Column(models.DateTime, default=datetime.utcnow)
     
-    user = models.relationship('User', back_populates="ratings")
-    resource = models.relationship('Resource', back_populates="ratings")
-
+    user = db.relationship('User', back_populates="ratings")
+    resource = db.relationship('Resource', back_populates="ratings")

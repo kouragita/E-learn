@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from models import badge, learning_path, quiz, progress, resource, role, user
 from flask_migrate import Migrate
-from server.models import db, badge, user, quiz, role, resource, progress, learning_path # Import db directly
+from server.models import db # Import db directly
 import os
 
 app = Flask(__name__)
