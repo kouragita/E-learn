@@ -3,7 +3,7 @@ from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-from server.models import db # Import db directly
+from models import db # Import db directly
 import os
 
 app = Flask(__name__)
