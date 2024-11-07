@@ -1,39 +1,39 @@
 from datetime import datetime
-from . import db
+from .. import models
 
-class Resource(db.Model):
+class Resource(models.Model):
     __tablename__ = 'resource'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
-    type = db.Column(db.String)
-    url = db.Column(db.String)
-    description = db.Column(db.Text)
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'))
+    id = models.Column(models.Integer, primary_key=True)
+    title = models.Column(models.String, nullable=False)
+    type = models.Column(models.String)
+    url = models.Column(models.String)
+    description = models.Column(models.Text)
+    module_id = models.Column(models.Integer, models.ForeignKey('module.id'))
     
-    module = db.relationship('Module', back_populates="resources")
-    comments = db.relationship('Comment', back_populates="resource")
-    ratings = db.relationship('Rating', back_populates="resource")
+    module = models.relationship('Module', back_populates="resources")
+    comments = models.relationship('Comment', back_populates="resource")
+    ratings = models.relationship('Rating', back_populates="resource")
     
 
-class Comment(db.Model):
+class Comment(models.Model):
     __tablename__ = 'comment'
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    resource_id = db.Column(db.Integer, db.ForeignKey('resource.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    id = models.Column(models.Integer, primary_key=True)
+    content = models.Column(models.Text, nullable=False)
+    user_id = models.Column(models.Integer, models.ForeignKey('user.id'))
+    resource_id = models.Column(models.Integer, models.ForeignKey('resource.id'))
+    created_at = models.Column(models.DateTime, default=datetime.utcnow)
     
-    user = db.relationship('User', back_populates="comments")
-    resource = db.relationship('Resource', back_populates="comments")
+    user = models.relationship('User', back_populates="comments")
+    resource = models.relationship('Resource', back_populates="comments")
     
-class Rating(db.Model):
+class Rating(models.Model):
     __tablename__ = 'rating'
-    id = db.Column(db.Integer, primary_key=True)
-    value = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    resource_id = db.Column(db.Integer, db.ForeignKey('resource.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    id = models.Column(models.Integer, primary_key=True)
+    value = models.Column(models.Integer)
+    user_id = models.Column(models.Integer, models.ForeignKey('user.id'))
+    resource_id = models.Column(models.Integer, models.ForeignKey('resource.id'))
+    created_at = models.Column(models.DateTime, default=datetime.utcnow)
     
-    user = db.relationship('User', back_populates="ratings")
-    resource = db.relationship('Resource', back_populates="ratings")
+    user = models.relationship('User', back_populates="ratings")
+    resource = models.relationship('Resource', back_populates="ratings")
 

@@ -1,11 +1,11 @@
-from . import db
+from .. import models
 
-class Quiz(db.Model):
+class Quiz(models.Model):
     __tablename__ = 'quiz'
-    id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.Text)
-    options = db.Column(db.Text)  # This could be JSON for options
-    correct_answer = db.Column(db.String)
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'))
+    id = models.Column(models.Integer, primary_key=True)
+    question = models.Column(models.Text)
+    options = models.Column(models.Text)  # This could be JSON for options
+    correct_answer = models.Column(models.String)
+    module_id = models.Column(models.Integer, models.ForeignKey('module.id'))
     
-    module = db.relationship('Module', back_populates="quizzes")
+    module = models.relationship('Module', back_populates="quizzes")
