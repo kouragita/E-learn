@@ -1,5 +1,6 @@
 from datetime import datetime
 from . import db
+
 class Resource(db.Model):
     __tablename__ = 'resource'
     id = db.Column(db.Integer, primary_key=True)

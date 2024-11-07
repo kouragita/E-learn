@@ -11,27 +11,24 @@ class LearningPath(db.Model):
     modules = db.relationship('Module', back_populates='learning_path')
     users = db.relationship('UserLearningPath', back_populates='learning_path')
 
-
 class UserLearningPath(db.Model):
-    __tablename__ = 'user_learning_paths'
-    user_id = models.Column(models.Integer, models.ForeignKey('users.id'), primary_key=True)
-    learning_path_id = models.Column(models.Integer, models.ForeignKey('learning_paths.id'), primary_key=True)
-    progress = models.Column(models.Integer, default=0)
-    date_enrolled = models.Column(models.DateTime, default=models.func.current_timestamp())
-
-    user = models.relationship('User', back_populates='learning_paths')
-    learning_path = models.relationship('LearningPath', back_populates='users')
+    __tablename__ = 'user_learning_path'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    learning_path_id = db.Column(db.Integer, db.ForeignKey('learning_path.id'), primary_key=True)
+    progress = db.Column(db.Integer, default=0)
+    date_enrolled = db.Column(db.DateTime, default=datetime.utcnow)
     
+    user = db.relationship('User', back_populates="learning_paths")
+    learning_path = db.relationship('LearningPath', back_populates="users")
 
-class Module(models.Model):
+class Module(db.Model):
     __tablename__ = 'module'
-    id = models.Column(models.Integer, primary_key=True)
-    title = models.Column(models.String, nullable=False)
-    description = models.Column(models.Text)
-    learning_path_id = models.Column(models.Integer, db.ForeignKey('learning_path.id'))
-    module_order = models.Column(models.Integer)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text)
+    learning_path_id = db.Column(db.Integer, db.ForeignKey('learning_path.id'))
+    module_order = db.Column(db.Integer)
     
-    learning_path = models.relationship('LearningPath', back_populates="modules")
-    resources = models.relationship('Resource', back_populates="module")
-    quizzes = models.relationship('Quiz', back_populates="module")
-
+    learning_path = db.relationship('LearningPath', back_populates="modules")
+    resources = db.relationship('Resource', back_populates="module")
+    quizzes = db.relationship('Quiz', back_populates="module")

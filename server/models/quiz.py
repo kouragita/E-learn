@@ -1,4 +1,5 @@
-from .. import models
+from . import db
+
 class Quiz(db.Model):
     __tablename__ = 'quiz'
     id = db.Column(db.Integer, primary_key=True)
