@@ -1,12 +1,12 @@
-from . import db
+from .. import models
 
-class Progress(db.Model):
+class Progress(models.Model):
     __tablename__ = 'progress'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'))
-    completed = db.Column(db.Boolean, default=False)
-    completion_date = db.Column(db.DateTime)
+    id = models.Column(models.Integer, primary_key=True)
+    user_id = models.Column(models.Integer, models.ForeignKey('user.id'))
+    module_id = models.Column(models.Integer, models.ForeignKey('module.id'))
+    completed = models.Column(models.Boolean, default=False)
+    completion_date = models.Column(models.DateTime)
     
-    user = db.relationship('User', back_populates="progress")
-    module = db.relationship('Module')
+    user = models.relationship('User', back_populates="progress")
+    module = models.relationship('Module')
