@@ -1,9 +1,9 @@
-from . import db
+from .. import models
 
-class Role(db.Model):
+class Role(models.Model):
     __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    description = db.Column(db.String(150))
+    id = models.Column(models.Integer, primary_key=True)
+    name = models.Column(models.String(50), nullable=False, unique=True)
+    description = models.Column(models.String(150))
 
-    users = db.relationship('User', back_populates='role')
+    users = models.relationship('User', back_populates='role')

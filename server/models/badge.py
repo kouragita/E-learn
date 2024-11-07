@@ -1,20 +1,20 @@
 from datetime import datetime
-from . import db
+from .. import models
 
-class Badge(db.Model):
+class Badge(models.Model):
     __tablename__ = 'badge'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    description = db.Column(db.Text)
-    image_url = db.Column(db.String)
-    points_required = db.Column(db.Integer)
+    id = models.Column(models.Integer, primary_key=True)
+    name = models.Column(models.String, nullable=False)
+    description = models.Column(models.Text)
+    image_url = models.Column(models.String)
+    points_required = models.Column(models.Integer)
     
-class Achievement(db.Model):
+class Achievement(models.Model):
     __tablename__ = 'achievement'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'))
-    date_achieved = db.Column(db.DateTime, default=datetime.utcnow)
+    id = models.Column(models.Integer, primary_key=True)
+    user_id = models.Column(models.Integer, models.ForeignKey('user.id'))
+    badge_id = models.Column(models.Integer, models.ForeignKey('badge.id'))
+    date_achieved = models.Column(models.DateTime, default=datetime.utcnow)
     
-    user = db.relationship('User', back_populates="achievements")
-    badge = db.relationship('Badge')
+    user = models.relationship('User', back_populates="achievements")
+    badge = models.relationship('Badge')
