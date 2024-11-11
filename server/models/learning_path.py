@@ -1,12 +1,13 @@
+from datetime import datetime
 from . import db
 
 class LearningPath(db.Model):
     __tablename__ = 'learning_paths'
-    id = db.Column(models.Integer, primary_key=True)
-    title = db.Column(models.String(150), nullable=False)
-    description = db.Column(models.Text)
-    contributor_id = db.Column(models.Integer, models.ForeignKey('users.id'))
-    created_at = db.Column(models.DateTime, default=models.func.current_timestamp())
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text)
+    contributor_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     modules = db.relationship('Module', back_populates='learning_path')
     users = db.relationship('UserLearningPath', back_populates='learning_path')
