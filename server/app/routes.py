@@ -13,7 +13,7 @@ from app.resources.achievement import AchievementResource, AchievementListResour
 from app.resources.progress import ProgressResource, ProgressListResource
 from app.auth.auth import auth_bp  
 
-#  API blueprint
+# Initialize the API blueprint and API
 api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
@@ -42,8 +42,10 @@ api.add_resource(ProgressListResource, '/progress')
 api.add_resource(ProgressResource, '/progress/<int:id>')
 
 def register_routes(app):
-    # Register the main API blueprint with a URL prefix
-    app.register_blueprint(api_bp, url_prefix='/api')
+    # Check if the 'api' blueprint is already registered to avoid duplicates
+    if 'api' not in app.blueprints:
+        app.register_blueprint(api_bp, url_prefix='/api')
     
     # Register the auth blueprint for authentication-related routes with a separate prefix
-    app.register_blueprint(auth_bp, url_prefix='/auth')
+    if 'auth' not in app.blueprints:
+        app.register_blueprint(auth_bp, url_prefix='/auth')

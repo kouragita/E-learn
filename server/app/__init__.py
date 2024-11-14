@@ -32,8 +32,7 @@ def create_app():
         db.create_all()  # Create tables for all models
     
     # Import and register your blueprints or APIs here
-    from .routes import api_bp, register_routes
-    app.register_blueprint(api_bp, url_prefix='/api')  
-    register_routes(app)  
-    
+    from .routes import register_routes
+    register_routes(app)  # Register main API routes and auth routes
+
     return app
