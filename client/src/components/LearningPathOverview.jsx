@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PathCard from './PathCard';
+import Comments from './components/Comments';
+import Ratings from './components/Ratings';
+import DiscussionThread from './copmonents/DiscussionThread';
 
 function LearningPathOverview() {
   const [learningPaths, setLearningPaths] = useState([]);
@@ -26,6 +29,9 @@ function LearningPathOverview() {
   return (
     <div>
       <h2>Popular Learning Paths</h2>
+      <Ratings learningPathId={learningPath.id} />
+      <Comments learningPathId={learningPath.id} />
+      <DiscussionThread learningPathId={learningPath.id} />
       <div className="path-list">
         {learningPaths.map((path) => (
           <PathCard key={path.id} path={path} onFollow={handleFollow} />
