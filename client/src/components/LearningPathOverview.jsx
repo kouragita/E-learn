@@ -1,36 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import PathCard from './PathCard';
+import LearningPathDetail from './LearningPathDetail';
 
 function LearningPathOverview() {
   const [learningPaths, setLearningPaths] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch learning paths from the backend
   useEffect(() => {
-    // Fetch learning paths from backend
-    const fetchPaths = async () => {
-      const response = await fetch('/api/learning_paths'); // adjust API endpoint as needed
-      const data = await response.json();
-      setLearningPaths(data);
+    const fetchLearningPaths = async () => {
+      try {
+        const response = await fetch('/learning_paths');
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setLearningPaths(data);  // Expecting a list of learning path objects
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchPaths();
+
+    fetchLearningPaths();
   }, []);
 
-  const handleFollow = async (pathId) => {
-    try {
-      await fetch(`/api/follow/${pathId}`, { method: 'POST' });
-      console.log(`Followed path with id: ${pathId}`);
-    } catch (error) {
-      console.error("Error following path:", error);
-    }
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div>
-      <h2>Popular Learning Paths</h2>
-      <div className="path-list">
-        {learningPaths.map((path) => (
-          <PathCard key={path.id} path={path} onFollow={handleFollow} />
-        ))}
-      </div>
+    <div className="learningpath">
+      <h2>Welcome to Learning Paths</h2>
+      {learningPaths.length > 0 ? (
+        learningPaths.map((path) => (
+          <LearningPathDetail key={path.id} path={path} />
+        ))
+      ) : (
+        <div>No Learning Paths available.</div>
+      )}
     </div>
   );
 }

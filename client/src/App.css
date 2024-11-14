@@ -1,43 +1,39 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+body {
+  background-color: #AEEEEE; /* Light Blue */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100vh; /* Full viewport height */
+  font-family: Arial, sans-serif;
+}
+
+.learningpath {
+  background-color: #FFFFFF; /* White background for the component */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  width: 90%; /* Responsive width */
+}
+
+.learningpath h2 {
+  color: #00008B; /* Dark Blue */
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.learningpath .learning-path-detail {
+  background-color: #FFFFFF; /* White for detail cards */
+  border: 1px solid #4682B4; /* Medium Blue border */
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  transition: transform 0.2s;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.learningpath .learning-path-detail:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-
-.read-the-docs {
-  color: #888;
-}

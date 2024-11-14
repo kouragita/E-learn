@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LearningPathOverview from './components/LearningPathOverview';
+import LearningPathDetail from './components/LearningPathDetail';
+import CreateLearningPathForm from './components/CreateLearningPathForm';
+import Challenges from './components/Challenges';
+import Rewards from './components/Rewards';
+import EventHighlights from './components/EventHighlights';
+import ModuleDetail from './components/ModuleDetail';
+import ResourceDetail from './components/ResourceDetail';
+import QuizDetail from './components/QuizDetail';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Routes>
+        {/* Route for the Learning Path Overview */}
+        <Route path="/" element={<LearningPathOverview />} />
+
+        {/* Route for the Learning Path Detail */}
+        <Route path="/learning-path/:pathId" element={<LearningPathDetail />} />
+
+        {/* Route for a specific Module within a Learning Path */}
+        <Route path="/learning-path/:pathId/module/:moduleId" element={<ModuleDetail />} />
+
+        {/* Route for a specific Resource within a Module */}
+        <Route path="/learning-path/:pathId/module/:moduleId/resource/:resourceId" element={<ResourceDetail />} />
+
+        {/* Route for a specific Quiz within a Learning Path */}
+        <Route path="/learning-path/:pathId/quiz/:quizId" element={<QuizDetail />} />
+
+        {/* Route for Create Learning Path Form */}
+        <Route path="/create-learning-path" element={<CreateLearningPathForm />} />
+
+        {/* Route for Challenges */}
+        <Route path="/challenges" element={<Challenges />} />
+
+        {/* Route for Rewards */}
+        <Route path="/rewards" element={<Rewards />} />
+
+        {/* Route for Event Highlights */}
+        <Route path="/events" element={<EventHighlights />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
