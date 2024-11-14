@@ -48,4 +48,4 @@ def register_routes(app):
     
     # Register the auth blueprint for authentication-related routes with a separate prefix
     if 'auth' not in app.blueprints:
-        app.register_blueprint(auth_bp, url_prefix='/auth')
+        app.register_blueprint(auth_bp, url_prefix='/auth')        

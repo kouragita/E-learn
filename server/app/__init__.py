@@ -9,7 +9,6 @@ db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 
-
 def create_app():
     app = Flask(__name__)
     
@@ -21,7 +20,6 @@ def create_app():
     ma.init_app(app)
     migrate.init_app(app, db) 
     CORS(app)
-    
     
     # Import models here to register them with SQLAlchemy
     with app.app_context():
