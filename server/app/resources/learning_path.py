@@ -44,6 +44,7 @@ class LearningPathListResource(Resource):
     def get(self):
         paths = LearningPath.query.all()
         return learning_paths_schema.dump(paths), 200
+    
 
     def post(self):
         parser = reqparse.RequestParser()

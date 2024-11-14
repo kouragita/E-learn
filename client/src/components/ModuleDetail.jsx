@@ -9,7 +9,7 @@ const ModuleDetail = () => {
     const [resources, setResources] = useState([]);
 
     useEffect(() => {
-        fetch(`/learning-paths/${pathId}/module/${moduleId}`)
+        fetch('/learning-paths/${pathId}/modules/<int:id>')
             .then(res => res.json())
             .then(data => setModule(data))
             .catch(error => console.error('Error fetching module details:', error));

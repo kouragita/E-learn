@@ -10,7 +10,7 @@ function LearningPathOverview() {
   useEffect(() => {
     const fetchLearningPaths = async () => {
       try {
-        const response = await fetch('/learning_paths');
+        const response = await fetch('https://e-learn-ncux.onrender.com/api/learning_paths');
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
