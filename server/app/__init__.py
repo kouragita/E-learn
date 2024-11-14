@@ -2,11 +2,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 # Initialize extensions
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
+
 
 def create_app():
     app = Flask(__name__)
@@ -18,6 +20,8 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db) 
+    CORS(app)
+    
     
     # Import models here to register them with SQLAlchemy
     with app.app_context():
@@ -28,7 +32,8 @@ def create_app():
         db.create_all()  # Create tables for all models
     
     # Import and register your blueprints or APIs here
-    from .routes import register_routes
-    register_routes(app)  # Register main API routes and auth routes
-
+    from .routes import api_bp, register_routes
+    app.register_blueprint(api_bp, url_prefix='/api')  
+    register_routes(app)  
+    
     return app

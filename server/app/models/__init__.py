@@ -1,3 +1,5 @@
+from app import db
+
 from .user import User
 from .role import Role
 from .user_profile import UserProfile

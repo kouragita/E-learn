@@ -11,9 +11,9 @@ from app.resources.rating import RatingResource, RatingListResource
 from app.resources.badge import BadgeResource, BadgeListResource
 from app.resources.achievement import AchievementResource, AchievementListResource
 from app.resources.progress import ProgressResource, ProgressListResource
-from app.auth.auth import auth_bp  # Import the auth blueprint
+from app.auth.auth import auth_bp  
 
-# Create an API blueprint
+#  API blueprint
 api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
