@@ -4,7 +4,8 @@ from app.models import (
     Progress, Module, LearningPath, Comment, Badge, Achievement
 )
 from werkzeug.security import generate_password_hash  # Ensure correct hashing method
-
+from datetime import datetime
+from app.schemas.user_schema import UserSchema
 # Initialize the app and push an application context
 app = create_app()
 
@@ -13,7 +14,7 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    # Seed roles
+       # Seed roles
     if not Role.query.first():
         roles = [
             Role(name="Admin", description="Platform administrator"),
@@ -22,19 +23,20 @@ with app.app_context():
         ]
         db.session.add_all(roles)
         db.session.commit()
-    
-    # Seed users with password hashing
+
+    # Seed users with password hashing and emails
     if not User.query.first():
         users = [
-            User(username="Daniel Watoro", password=generate_password_hash("password12", method='pbkdf2:sha256'), role_id=1),
-            User(username="Wilson Mwangi", password=generate_password_hash("password34", method='pbkdf2:sha256'), role_id=1),
-            User(username="David Wekesa", password=generate_password_hash("password56", method='pbkdf2:sha256'), role_id=3),
-            User(username="Bakari Bubu", password=generate_password_hash("password78", method='pbkdf2:sha256'), role_id=2),
-            User(username="Mercy Nzau", password=generate_password_hash("password90", method='pbkdf2:sha256'), role_id=3),
-            User(username="Winnie Nyambura", password=generate_password_hash("password09", method='pbkdf2:sha256'), role_id=3)
+            User(username="Daniel Watoro", email="daniel.watoro@example.com", password=generate_password_hash("password12", method='pbkdf2:sha256'), role_id=1),
+            User(username="Wilson Mwangi", email="wilson.mwangi@example.com", password=generate_password_hash("password34", method='pbkdf2:sha256'), role_id=1),
+            User(username="David Wekesa", email="david.wekesa@example.com", password=generate_password_hash("password56", method='pbkdf2:sha256'), role_id=3),
+            User(username="Bakari Bubu", email="bakari.bubu@example.com", password=generate_password_hash("password78", method='pbkdf2:sha256'), role_id=2),
+            User(username="Mercy Nzau", email="mercy.nzau@example.com", password=generate_password_hash("password90", method='pbkdf2:sha256'), role_id=3),
+            User(username="Winnie Nyambura", email="winnie.nyambura@example.com", password=generate_password_hash("password09", method='pbkdf2:sha256'), role_id=3)
         ]
         db.session.add_all(users)
         db.session.commit()
+
       
     # Seed profiles
     if not UserProfile.query.first():
@@ -62,6 +64,7 @@ with app.app_context():
         db.session.add_all(learning_paths)
         db.session.commit()
     
+
     # Seed modules
     if not Module.query.first():
         modules = [
