@@ -26,7 +26,7 @@ class UserResource(Resource):
             return {"message": "User not found"}, 404
         
         user.username = data['username']
-        user.password = data['password']
+        user.password = data['password']  # Consider hashing passwords in practice
         user.role_id = data['role_id']
         
         db.session.commit()
@@ -50,12 +50,18 @@ class UserListResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('username', type=str, required=True)
         parser.add_argument('password', type=str, required=True)
+        parser.add_argument('email', type=str, required=True)
         parser.add_argument('role_id', type=int, required=True)
         data = parser.parse_args()
 
+        # Check if the email is already in use
+        if User.query.filter_by(email=data['email']).first():
+            return {"message": "Email already in use"}, 400
+
         new_user = User(
             username=data['username'],
-            password=data['password'],
+            password=data['password'],  # Consider hashing passwords in practice
+            email=data['email'],
             role_id=data['role_id']
         )
         

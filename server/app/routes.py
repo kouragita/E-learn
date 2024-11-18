@@ -1,5 +1,7 @@
 from flask import Blueprint
 from flask_restful import Api
+from app.resources.userlearning_path import UserLearningPathResource, UserLearningPathListResource
+from app.resources.user_profile import UserProfileResource, UserProfileListResource
 from app.resources.user import UserResource, UserListResource
 from app.resources.role import RoleResource, RoleListResource
 from app.resources.learning_path import LearningPathResource, LearningPathListResource
@@ -20,6 +22,10 @@ api = Api(api_bp)
 # Register API resource routes
 api.add_resource(UserListResource, '/users')
 api.add_resource(UserResource, '/users/<int:user_id>')
+api.add_resource(UserProfileListResource, '/user-profiles')
+api.add_resource(UserProfileResource, '/user-profiles/<int:user_id>')
+api.add_resource(UserLearningPathListResource, '/user-learning-paths')
+api.add_resource(UserLearningPathResource, '/user-learning-paths/<int:user_id>/<int:learning_path_id>')
 api.add_resource(RoleListResource, '/roles')
 api.add_resource(RoleResource, '/roles/<int:role_id>')
 api.add_resource(LearningPathListResource, '/learning_paths')
