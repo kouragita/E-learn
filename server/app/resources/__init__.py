@@ -1,6 +1,6 @@
 from .user import UserResource, UserListResource
 from .role import RoleResource, RoleListResource
-from .learning_path import LearningPathResource, LearningPathListResource
+from .learning_path import LearningPathResource, LearningPathListResource, LearningPathModulesResource
 from .module import ModuleResource, ModuleListResource
 from .resource import ResourceResource, ResourceListResource
 from .quiz import QuizResource, QuizListResource

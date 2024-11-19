@@ -4,7 +4,7 @@ from app.resources.userlearning_path import UserLearningPathResource, UserLearni
 from app.resources.user_profile import UserProfileResource, UserProfileListResource
 from app.resources.user import UserResource, UserListResource
 from app.resources.role import RoleResource, RoleListResource
-from app.resources.learning_path import LearningPathResource, LearningPathListResource
+from app.resources.learning_path import LearningPathResource, LearningPathListResource, LearningPathModulesResource
 from app.resources.module import ModuleResource, ModuleListResource
 from app.resources.resource import ResourceResource, ResourceListResource
 from app.resources.quiz import QuizResource, QuizListResource
@@ -30,6 +30,7 @@ api.add_resource(RoleListResource, '/roles')
 api.add_resource(RoleResource, '/roles/<int:role_id>')
 api.add_resource(LearningPathListResource, '/learning_paths')
 api.add_resource(LearningPathResource, '/learning_paths/<int:path_id>')
+api.add_resource(LearningPathModulesResource, '/learning_paths/<int:path_id>/modules')
 api.add_resource(ModuleListResource, '/modules')
 api.add_resource(ModuleResource, '/modules/<int:module_id>')
 api.add_resource(ResourceListResource, '/resources')
