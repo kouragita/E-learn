@@ -7,7 +7,6 @@ import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
-# Replace with your actual secret key
 SECRET_KEY = "your_secret_key_here"
 
 @auth_bp.route('/signup', methods=['POST'])
@@ -21,13 +20,12 @@ def signup_user():
     if existing_user:
         return jsonify({"message": "Username or email already in use"}), 409
 
-    # Hash the password before saving
     hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
     new_user = User(
         username=data['username'],
         password=hashed_password,
         email=data['email'],
-        role_id=data.get('role_id', 1)  # Default role_id if not provided
+        role_id=data.get('role_id', 1)  
     )
     db.session.add(new_user)
     db.session.commit()
