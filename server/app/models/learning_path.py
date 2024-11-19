@@ -4,10 +4,11 @@ class LearningPath(db.Model):
     __tablename__ = 'learning_paths'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text, nullable=True)
     contributor_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     # Relationships
-    modules = db.relationship('Module', backref='learning_path', cascade='all, delete-orphan')
+    contributor = db.relationship('User', back_populates='contributed_learning_paths')
+    enrolled_users = db.relationship('UserLearningPath', back_populates='learning_path')

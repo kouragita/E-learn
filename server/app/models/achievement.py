@@ -7,3 +7,5 @@ class Achievement(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     badge_id = db.Column(db.Integer, db.ForeignKey('badges.id'))
     date_achieved = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    user = db.relationship('User', back_populates='achievements')
