@@ -5,4 +5,4 @@ class BadgeSchema(Schema):
     name = fields.Str(required=True)
     description = fields.Str()
     image_url = fields.Url()
-    points_required = fields.Int(required=True)
+    points_required = fields.Int(required=True, validate=lambda x: x > 0)

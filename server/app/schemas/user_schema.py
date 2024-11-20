@@ -17,3 +17,5 @@ class UserSchema(SQLAlchemySchema):
     # Nested Relationships
     profile = fields.Nested('UserProfileSchema', exclude=('user_id',), many=False)
     learning_paths = fields.List(fields.Nested('UserLearningPathSchema', exclude=('user',)))
+    
+
