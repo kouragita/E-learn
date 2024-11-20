@@ -9,3 +9,4 @@ from .rating import RatingResource, RatingListResource
 from .badge import BadgeResource, BadgeListResource
 from .achievement import AchievementResource, AchievementListResource
 from .progress import ProgressResource, ProgressListResource
+from .leaderboard import LeaderboardResource

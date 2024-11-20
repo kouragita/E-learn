@@ -1,5 +1,6 @@
 from flask import Blueprint
 from flask_restful import Api
+from app.resources.leaderboard import LeaderboardResource
 from app.resources.userlearning_path import UserLearningPathResource, UserLearningPathListResource
 from app.resources.user_profile import UserProfileResource, UserProfileListResource
 from app.resources.user import UserResource, UserListResource
@@ -20,6 +21,7 @@ api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
 # Register API resource routes
+api.add_resource(LeaderboardResource, '/leaderboard')
 api.add_resource(UserListResource, '/users')
 api.add_resource(UserResource, '/users/<int:user_id>')
 api.add_resource(UserProfileListResource, '/user-profiles')
