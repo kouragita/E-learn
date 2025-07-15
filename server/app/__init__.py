@@ -19,10 +19,14 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db) 
-    CORS(app, origins=[
-        "https://new-crowdsourced.onrender.com",
-        "http://localhost:3000"  # For development
-    ])
+    
+    # Updated CORS configuration to allow all origins and handle preflight requests
+    CORS(app, 
+         origins="*",
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+         supports_credentials=True
+    )
     
     # Import models here to register them with SQLAlchemy
     with app.app_context():
