@@ -19,7 +19,10 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db) 
-    CORS(app)
+    CORS(app, origins=[
+        "https://new-crowdsourced.onrender.com",
+        "http://localhost:3000"  # For development
+    ])
     
     # Import models here to register them with SQLAlchemy
     with app.app_context():
