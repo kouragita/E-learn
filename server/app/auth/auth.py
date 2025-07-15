@@ -27,6 +27,10 @@ def signup_user():
     # Hash password
     hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
 
+    # Extract optional fields
+    first_name = data.get('first_name', '')
+    last_name = data.get('last_name', '')
+
     # Assign default role (Learner) if no role is provided
     new_user = User(
         username=data['username'],
@@ -37,7 +41,34 @@ def signup_user():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User created successfully"}), 201
+    # Generate JWT token for auto-login after signup
+    token = jwt.encode(
+        {
+            "user_id": new_user.id,
+            "role_id": new_user.role_id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+
+    return jsonify({
+        "message": "User created successfully",
+        "token": token,
+        "user": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "email": new_user.email,
+            "role_id": new_user.role_id,
+            "role": "student",
+            "total_points": 0,
+            "current_streak": 0,
+            "badges": [],
+            "profile_picture": None,
+            "first_name": first_name,
+            "last_name": last_name
+        }
+    }), 201
 
 
 @auth_bp.route('/login', methods=['POST'])
@@ -62,10 +93,25 @@ def login_user():
             SECRET_KEY,
             algorithm="HS256"
         )
+        
+        # Map role_id to role name
+        role_map = {1: "admin", 2: "instructor", 3: "student"}
+        role_name = role_map.get(user.role_id, "student")
+        
         return jsonify({
             "message": "Login successful",
             "token": token,
-            "role_id": user.role_id
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role_id": user.role_id,
+                "role": role_name,
+                "total_points": 0,
+                "current_streak": 0,
+                "badges": [],
+                "profile_picture": None
+            }
         }), 200
 
     return jsonify({"message": "Invalid credentials"}), 401
