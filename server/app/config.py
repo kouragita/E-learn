@@ -1,5 +1,10 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 class Config:
-    DEBUG = True 
-    # SQLALCHEMY_DATABASE_URI = 'sqlite:///e-learn.db'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://crowdsourceddb_2q41_user:N9MsIvVcFBkeK00MlGe1iPBYcvRehvDt@dpg-d1qfqo3ipnbc7390ugdg-a.oregon-postgres.render.com/crowdsourceddb_2q41'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', 'False').lower() == 'true'
