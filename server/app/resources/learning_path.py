@@ -1,4 +1,5 @@
 from flask_restful import Resource, reqparse
+from app.auth.decorators import roles_required
 from app.models import db
 from app.models.module import Module
 from app.models.learning_path import LearningPath
@@ -32,6 +33,7 @@ class LearningPathResource(Resource):
             return {"message": "Learning Path not found"}, 404
         return learning_path_schema.dump(path), 200
 
+    @roles_required(1, 2)
     def put(self, path_id):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str, required=True)
@@ -50,6 +52,7 @@ class LearningPathResource(Resource):
         db.session.commit()
         return learning_path_schema.dump(path), 200
 
+    @roles_required(1, 2)
     def delete(self, path_id):
         path = LearningPath.query.get(path_id)
         if not path:
@@ -64,6 +67,7 @@ class LearningPathListResource(Resource):
         paths = LearningPath.query.all()
         return learning_paths_schema.dump(paths), 200
 
+    @roles_required(1, 2)
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str, required=True)

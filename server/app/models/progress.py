@@ -8,3 +8,6 @@ class Progress(db.Model):
     module_id = db.Column(db.Integer, db.ForeignKey('modules.id'))
     completed = db.Column(db.Boolean, default=False)
     completion_date = db.Column(db.DateTime)
+
+    # Relationships
+    module = db.relationship('Module', back_populates='progress_records')

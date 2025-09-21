@@ -1,13 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models.user import User
 from app import db
-import jwt
+from flask_jwt_extended import create_access_token
 import datetime
 
 auth_bp = Blueprint('auth', __name__)
-
-SECRET_KEY = "your_secret_key_here"
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup_user():
@@ -42,15 +40,8 @@ def signup_user():
     db.session.commit()
 
     # Generate JWT token for auto-login after signup
-    token = jwt.encode(
-        {
-            "user_id": new_user.id,
-            "role_id": new_user.role_id,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-        },
-        SECRET_KEY,
-        algorithm="HS256"
-    )
+    additional_claims = {"role": new_user.role_id}
+    token = create_access_token(identity=new_user.id, additional_claims=additional_claims)
 
     return jsonify({
         "message": "User created successfully",
@@ -84,15 +75,8 @@ def login_user():
 
     if user and check_password_hash(user.password, data['password']):
         # Generate JWT token with user role and expiration
-        token = jwt.encode(
-            {
-                "user_id": user.id,
-                "role_id": user.role_id,  # Include role ID in the token
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-            },
-            SECRET_KEY,
-            algorithm="HS256"
-        )
+        additional_claims = {"role": user.role_id}
+        token = create_access_token(identity=user.id, additional_claims=additional_claims)
         
         # Map role_id to role name
         role_map = {1: "admin", 2: "instructor", 3: "student"}

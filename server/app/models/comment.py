@@ -8,3 +8,6 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     resource_id = db.Column(db.Integer, db.ForeignKey('resources.id'))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    resource = db.relationship('Resource', back_populates='comments')

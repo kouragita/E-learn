@@ -1,19 +1,22 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from marshmallow import fields, validate
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+from marshmallow import fields
 from app.models.module import Module
+from .resource_schema import ResourceSchema
 
-class ModuleSchema(SQLAlchemyAutoSchema):
+class ModuleSchema(SQLAlchemySchema):
     class Meta:
         model = Module
         load_instance = True
         include_fk = True
 
-    # Custom validations
-    title = fields.Str(required=True, validate=validate.Length(min=1, error="Title must not be empty"))
-    description = fields.Str(allow_none=True)
-    learning_path_id = fields.Int(required=True, dump_only=False)
-    order = fields.Int(required=True, dump_only=False)
+    id = auto_field(dump_only=True)
+    title = auto_field(required=True)
+    description = auto_field()
+    order_index = auto_field()
+    status = auto_field()
+    created_at = auto_field(dump_only=True)
+    updated_at = auto_field(dump_only=True)
 
-    #  nested relationships
-    resources = fields.List(fields.Nested("ResourceSchema", only=["id", "title", "url"]))
-    quizzes = fields.List(fields.Nested("QuizSchema", only=["id", "question"]))
+    # Nested relationships
+    resources = fields.Nested(ResourceSchema, many=True, exclude=("module",))
+    # quizzes = fields.List(fields.Nested("QuizSchema", only=["id", "question"]))

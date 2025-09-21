@@ -1,13 +1,18 @@
 from flask_restful import Resource, reqparse
+from werkzeug.security import generate_password_hash
 from app.models import db
 from app.models.user import User
 from app.schemas.user_schema import UserSchema
 from flask import jsonify
 
+from app.auth.decorators import admin_required
+
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
 class UserResource(Resource):
+    method_decorators = [admin_required()]
+
     def get(self, user_id):
         user = User.query.get(user_id)
         if not user:
@@ -26,7 +31,7 @@ class UserResource(Resource):
             return {"message": "User not found"}, 404
         
         user.username = data['username']
-        user.password = data['password']  # Consider hashing passwords in practice
+        user.password = generate_password_hash(data['password'], method='pbkdf2:sha256')
         user.role_id = data['role_id']
         
         db.session.commit()
@@ -42,6 +47,8 @@ class UserResource(Resource):
         return {"message": "User deleted successfully"}, 200
 
 class UserListResource(Resource):
+    method_decorators = [admin_required()]
+
     def get(self):
         users = User.query.all()
         return users_schema.dump(users), 200
@@ -60,7 +67,7 @@ class UserListResource(Resource):
 
         new_user = User(
             username=data['username'],
-            password=data['password'],  # Consider hashing passwords in practice
+            password=generate_password_hash(data['password'], method='pbkdf2:sha256'),
             email=data['email'],
             role_id=data['role_id']
         )

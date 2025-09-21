@@ -8,3 +8,6 @@ class Quiz(db.Model):
     options = db.Column(db.Text)  # Store JSON of options if needed
     correct_answer = db.Column(db.String(255))
     module_id = db.Column(db.Integer, db.ForeignKey('modules.id'))
+
+    # Relationships
+    module = db.relationship('Module', back_populates='quizzes')

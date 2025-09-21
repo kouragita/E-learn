@@ -3,11 +3,15 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from flask_restful import Api
 
 # Initialize extensions
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
+jwt = JWTManager()
+api = Api()
 
 def create_app():
     app = Flask(__name__)
@@ -18,7 +22,9 @@ def create_app():
     # Initialize extensions with the app
     db.init_app(app)
     ma.init_app(app)
-    migrate.init_app(app, db) 
+    migrate.init_app(app, db)
+    jwt.init_app(app)
+    api.init_app(app)
     
     # Updated CORS configuration to allow all origins and handle preflight requests
     CORS(app, 
@@ -28,16 +34,16 @@ def create_app():
          supports_credentials=True
     )
     
-    # Import models here to register them with SQLAlchemy
-    with app.app_context():
-        from .models import (
-            user, role, user_profile, learning_path, module, resource,
-            quiz, comment, rating, badge, achievement, progress, user_learning_path
-        )
-        db.create_all()  # Create tables for all models
+    # Import models here to ensure they are known to Flask-Migrate
+    from .models import (
+        user, role, user_profile, learning_path, module, resource,
+        quiz, comment, rating, badge, achievement, progress, user_learning_path
+    )
     
-    # Import and register your blueprints or APIs here
+    # Register all routes
     from .routes import register_routes
-    register_routes(app)  # Register main API routes and auth routes
+    from .admin import register_admin_routes
+    register_routes(app)
+    register_admin_routes()
 
     return app

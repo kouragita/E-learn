@@ -2,11 +2,14 @@ from flask_restful import Resource, reqparse
 from app.models import db
 from app.models.role import Role
 from app.schemas.role_schema import RoleSchema
+from app.auth.decorators import admin_required
 
 role_schema = RoleSchema()
 roles_schema = RoleSchema(many=True)
 
 class RoleResource(Resource):
+    method_decorators = [admin_required()]
+
     def get(self, role_id):
         role = Role.query.get(role_id)
         if not role:
@@ -39,6 +42,8 @@ class RoleResource(Resource):
         return {"message": "Role deleted successfully"}, 200
 
 class RoleListResource(Resource):
+    method_decorators = [admin_required()]
+
     def get(self):
         roles = Role.query.all()
         return roles_schema.dump(roles), 200
