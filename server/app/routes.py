@@ -1,5 +1,4 @@
 from flask import Blueprint
-from app import api
 from app.resources.leaderboard import LeaderboardResource
 from app.resources.userlearning_path import UserLearningPathResource, UserLearningPathListResource
 from app.resources.user_profile import UserProfileResource, UserProfileListResource
@@ -19,7 +18,7 @@ from app.callbacks.africastalking_routes import AfricasTalkingCallback
 from app.resources.ai_resources import RecommendationsResource
 from app.auth.auth import auth_bp
 
-def register_routes(app):
+def register_routes(app, api):
     # Register the auth blueprint for authentication-related routes with a separate prefix
     if 'auth' not in app.blueprints:
         app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -55,4 +54,4 @@ def register_routes(app):
     api.add_resource(ProgressResource, '/api/progress/<int:progress_id>')
     api.add_resource(ProfileResource, '/api/profile')
     api.add_resource(AfricasTalkingCallback, '/api/callbacks/africas-talking')
-    api.add_resource(RecommendationsResource, '/api/ai/recommendations')        
+    api.add_resource(RecommendationsResource, '/api/ai/recommendations')

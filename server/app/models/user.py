@@ -10,6 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     phone_number = db.Column(db.String(20), nullable=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    status = db.Column(db.String(50), default='active', nullable=False, index=True) # active, pending, suspended
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     # Relationships

@@ -1,217 +1,259 @@
-from app import create_app, db  # Import create_app and db correctly
+
+import random
+from faker import Faker
+from app import create_app, db
 from app.models import (
-    User, UserProfile, UserLearningPath, Role, Resource, Rating, Quiz,
-    Progress, Module, LearningPath, Comment, Badge, Achievement
+    User, UserProfile, Role, LearningPath, Module, Resource, Quiz,
+    Progress, Comment, Rating, Badge, Achievement, UserLearningPath
 )
-from werkzeug.security import generate_password_hash  # Ensure correct hashing method
-from datetime import datetime
-from app.schemas.user_schema import UserSchema
-# Initialize the app and push an application context
-app = create_app()
+from werkzeug.security import generate_password_hash
 
-with app.app_context():
-    # Drop all tables and recreate them
-    db.drop_all()
-    db.create_all()
+fake = Faker()
 
-       # Seed roles
-    if not Role.query.first():
-        roles = [
-            Role(name="Admin", description="Platform administrator"),
-            Role(name="Contributor", description="Can create and share resources"),
-            Role(name="Learner", description="Can access learning paths"),
-        ]
-        db.session.add_all(roles)
+def seed_roles():
+    """Seeds the roles table."""
+    if Role.query.first():
+        return  # Roles already seeded
+
+    print("Seeding roles...")
+    roles = [
+        {"name": "Admin", "description": "Platform administrator with full access."},
+        {"name": "Contributor", "description": "Can create, edit, and manage their own learning content."},
+        {"name": "Learner", "description": "Can enroll in and consume learning content."}
+    ]
+    for role_data in roles:
+        role = Role(**role_data)
+        db.session.add(role)
+    db.session.commit()
+    print("Roles seeded.")
+
+def seed_users(num_users=20):
+    """Seeds users with different roles."""
+    if User.query.count() > 1:
+        return
+
+    print(f"Seeding {num_users} users...")
+    admin_role = Role.query.filter_by(name="Admin").first()
+    contributor_role = Role.query.filter_by(name="Contributor").first()
+    learner_role = Role.query.filter_by(name="Learner").first()
+
+    # Create a specific admin for easy login
+    admin_user = User(
+        username="admin",
+        email="admin@elearn.com",
+        password=generate_password_hash("admin", method='pbkdf2:sha256'),
+        role_id=admin_role.id
+    )
+    db.session.add(admin_user)
+    db.session.commit()
+    user_profile = UserProfile(user_id=admin_user.id, bio="E-learn Platform Administrator", points=100, xp=200)
+    db.session.add(user_profile)
+
+    # Create other users
+    for i in range(num_users - 1):
+        role = random.choices(
+            [admin_role, contributor_role, learner_role],
+            weights=[0.1, 0.3, 0.6],
+            k=1
+        )[0]
+        
+        username = fake.unique.user_name()
+        user = User(
+            username=username,
+            email=fake.unique.email(),
+            password=generate_password_hash("password", method='pbkdf2:sha256'),
+            role_id=role.id
+        )
+        db.session.add(user)
+        db.session.commit() # Commit to get user ID for profile
+        
+        user_profile = UserProfile(
+            user_id=user.id,
+            bio=fake.sentence(nb_words=10),
+            points=random.randint(0, 1000),
+            xp=random.randint(0, 5000)
+        )
+        db.session.add(user_profile)
+
+    db.session.commit()
+    print("Users and profiles seeded.")
+
+def seed_learning_content(num_paths=5, modules_per_path=4, resources_per_module=3):
+    """Seeds learning paths, modules, resources, and quizzes."""
+    if LearningPath.query.first():
+        return
+
+    print("Seeding learning content...")
+    contributors = User.query.join(Role).filter(Role.name == "Contributor").all()
+    if not contributors:
+        print("No contributors found to create content. Aborting content seeding.")
+        return
+
+    for _ in range(num_paths):
+        path = LearningPath(
+            title=fake.catch_phrase(),
+            description=fake.paragraph(nb_sentences=3),
+            contributor_id=random.choice(contributors).id,
+            category=random.choice(["Tech", "Business", "Arts", "Science", "Health"]),
+            difficulty_level=random.choice(["Beginner", "Intermediate", "Advanced"])
+        )
+        db.session.add(path)
         db.session.commit()
 
-    # Seed users with password hashing and emails
-    if not User.query.first():
-        users = [
-            User(username="Daniel Watoro", email="daniel.watoro@example.com", password=generate_password_hash("password12", method='pbkdf2:sha256'), role_id=1),
-            User(username="Wilson Mwangi", email="wilson.mwangi@example.com", password=generate_password_hash("password34", method='pbkdf2:sha256'), role_id=1),
-            User(username="David Wekesa", email="david.wekesa@example.com", password=generate_password_hash("password56", method='pbkdf2:sha256'), role_id=3),
-            User(username="Bakari Bubu", email="bakari.bubu@example.com", password=generate_password_hash("password78", method='pbkdf2:sha256'), role_id=2),
-            User(username="Mercy Nzau", email="mercy.nzau@example.com", password=generate_password_hash("password90", method='pbkdf2:sha256'), role_id=3),
-            User(username="Winnie Nyambura", email="winnie.nyambura@example.com", password=generate_password_hash("password09", method='pbkdf2:sha256'), role_id=3)
-        ]
-        db.session.add_all(users)
+        for i in range(modules_per_path):
+            module = Module(
+                title=f"Module {i+1}: {fake.sentence(nb_words=4)}",
+                description=fake.paragraph(nb_sentences=2),
+                learning_path_id=path.id,
+                order_index=i
+            )
+            db.session.add(module)
+            db.session.commit()
+
+            for j in range(resources_per_module):
+                resource = Resource(
+                    title=fake.sentence(nb_words=5),
+                    description=fake.paragraph(nb_sentences=1),
+                    type=random.choice(["Video", "Article", "PDF"]),
+                    url=fake.url(),
+                    module_id=module.id,
+                    order_index=j
+                )
+                db.session.add(resource)
+
+            # Add a quiz to each module
+            quiz = Quiz(
+                question=f"What is the key concept of Module {i+1}?",
+                options='["Concept A", "Concept B", "Concept C"]',
+                correct_answer="Concept B",
+                module_id=module.id
+            )
+            db.session.add(quiz)
+
+    db.session.commit()
+    print("Learning paths, modules, resources, and quizzes seeded.")
+
+def seed_enrollments_and_progress(num_enrollments=30):
+    """Seeds user enrollments in learning paths and simulates progress."""
+    if UserLearningPath.query.first():
+        return
+
+    print("Seeding user enrollments and progress...")
+    users = User.query.all()
+    paths = LearningPath.query.all()
+
+    for _ in range(num_enrollments):
+        user = random.choice(users)
+        path = random.choice(paths)
+
+        # Avoid duplicate enrollments
+        if UserLearningPath.query.filter_by(user_id=user.id, learning_path_id=path.id).first():
+            continue
+
+        enrollment = UserLearningPath(user_id=user.id, learning_path_id=path.id)
+        db.session.add(enrollment)
         db.session.commit()
 
-      
-    # Seed profiles
-    if not UserProfile.query.first():
-        profiles = [
-            UserProfile(user_id=1, points=500, xp=1000, bio="Admin user"),
-            UserProfile(user_id=2, points=300, xp=600, bio="Admin user"),
-            UserProfile(user_id=3, points=100, xp=200, bio="Learner user"),
-            UserProfile(user_id=4, points=250, xp=400, bio="Contributor user"),
-            UserProfile(user_id=5, points=150, xp=300, bio="Learner user"),
-            UserProfile(user_id=6, points=50, xp=100, bio="Learner user")
-        ]
-        db.session.add_all(profiles)
-        db.session.commit()
+        # Simulate progress
+        modules_in_path = Module.query.filter_by(learning_path_id=path.id).all()
+        if not modules_in_path:
+            continue
+            
+        num_modules_to_complete = random.randint(0, len(modules_in_path))
+        completed_modules = random.sample(modules_in_path, num_modules_to_complete)
 
-    # Seed learning paths
-    if not LearningPath.query.first():
-        learning_paths = [
-            LearningPath(title="Data Science Basics", description="Introduction to data science", contributor_id=2),
-            LearningPath(title="Web Development", description="Learn to build websites", contributor_id=2),
-            LearningPath(title="Machine Learning", description="Introduction to ML concepts", contributor_id=2),
-            LearningPath(title="Data Visualization", description="Visualizing data", contributor_id=4),
-            LearningPath(title="React Basics", description="Introduction to React", contributor_id=4),
-            LearningPath(title="Python Programming", description="Basics of Python", contributor_id=5)
-        ]
-        db.session.add_all(learning_paths)
-        db.session.commit()
+        for module in completed_modules:
+            progress = Progress(
+                user_id=user.id,
+                module_id=module.id,
+                completed=True,
+                completion_date=fake.date_time_this_year()
+            )
+            db.session.add(progress)
     
+    db.session.commit()
+    print("User enrollments and progress seeded.")
 
-    # Seed modules
-    if not Module.query.first():
-        modules = [
-            Module(title="Intro to Data Science", description="Learn the basics of data science", learning_path_id=1),
-            Module(title="HTML & CSS Basics", description="Learn HTML and CSS", learning_path_id=2),
-            Module(title="Intro to ML", description="Basics of machine learning", learning_path_id=3),
-            Module(title="Intro to Data Visualization", description="Data visualization basics", learning_path_id=4),
-            Module(title="React Components", description="Learn about React components", learning_path_id=5),
-            Module(title="Python Variables", description="Learn Python variables", learning_path_id=6)
-        ]
-        db.session.add_all(modules)
-        db.session.commit()
+def seed_social_features(num_comments=50, num_ratings=100):
+    """Seeds comments and ratings."""
+    if Comment.query.first():
+        return
+        
+    print("Seeding comments and ratings...")
+    users = User.query.all()
+    resources = Resource.query.all()
 
-    # Seed resources
-    if not Resource.query.first(): 
-        resources = [
-            Resource(title="Data Science", type="Video", url="https://youtu.be/X3paOmcrTjQ?si=A0x11b_cokxWXkTa", description="Data Science Introduction", module_id=1),
-            Resource(title="HTML Tutorial", type="Article", url="https://www.w3schools.com/html/", description="Learn HTML", module_id=2),
-            Resource(title="Machine Learning Guide", type="Article", url="https://www.geeksforgeeks.org/machine-learning/", description="ML basics", module_id=3),
-            Resource(title="Data Visualization Tips", type="Article", url="https://www.coursera.org/articles/data-visualization?msockid=19480a2c2cad66f8351419342d516787", description="Visualization techniques", module_id=4),
-            Resource(title="React Handbook", type="PDF", url="https://flaviocopes.pages.dev/books/react-handbook.pdf", description="React basics", module_id=5),
-            Resource(title="Python Basics", type="Video", url="https://youtu.be/kqtD5dpn9C8?si=xln65I405xnPdMKg", description="Intro to Python", module_id=6)
-        ]
-        db.session.add_all(resources)
-        db.session.commit()
+    for _ in range(num_comments):
+        comment = Comment(
+            content=fake.paragraph(nb_sentences=2),
+            user_id=random.choice(users).id,
+            resource_id=random.choice(resources).id
+        )
+        db.session.add(comment)
 
-    # Seed ratings
-    ratings = [
-        Rating(value=5, user_id=1, resource_id=1),
-        Rating(value=4, user_id=2, resource_id=2),
-        Rating(value=3, user_id=3, resource_id=3),
-        Rating(value=5, user_id=4, resource_id=4),
-        Rating(value=4, user_id=5, resource_id=5),
-        Rating(value=3, user_id=6, resource_id=6)
+    for _ in range(num_ratings):
+        # Avoid duplicate ratings
+        user = random.choice(users)
+        resource = random.choice(resources)
+        if Rating.query.filter_by(user_id=user.id, resource_id=resource.id).first():
+            continue
+            
+        rating = Rating(
+            value=random.randint(1, 5),
+            user_id=user.id,
+            resource_id=resource.id
+        )
+        db.session.add(rating)
+
+    db.session.commit()
+    print("Comments and ratings seeded.")
+
+def seed_gamification():
+    """Seeds badges and awards achievements."""
+    if Badge.query.first():
+        return
+        
+    print("Seeding badges and achievements...")
+    badges_data = [
+        {"name": "First Steps", "description": "Complete your first module.", "points_required": 10},
+        {"name": "Pathfinder", "description": "Complete your first learning path.", "points_required": 50},
+        {"name": "Serial Learner", "description": "Complete 5 learning paths.", "points_required": 250},
+        {"name": "Knowledgeable", "description": "Earn 1000 XP.", "points_required": 1000},
+        {"name": "Community Helper", "description": "Leave 10 helpful comments.", "points_required": 100},
     ]
-    db.session.add_all(ratings)
+    for badge_data in badges_data:
+        badge = Badge(**badge_data)
+        db.session.add(badge)
     db.session.commit()
 
-    # Seed quizzes
-    quizzes = [
-        Quiz(question="What is Data Science?", options='["A. Study of algorithms", "B. Analysis of data", "C. Cooking techniques"]', correct_answer="B", module_id=1),
-        Quiz(question="What does HTML stand for?", options='["A. Hyper Text Markup Language", "B. High Text Marking Language", "C. Home Tool Markup Language"]', correct_answer="A", module_id=2),
-        Quiz(question="What is Machine Learning?", options='["A. A programming language", "B. A set of rules", "C. A field of AI focused on algorithms that learn from data"]', correct_answer="C", module_id=3),
-        Quiz(question="What is Data Visualization?", options='["A. The practice of representing data graphically", "B. A tool for managing data", "C. A data storage method"]', correct_answer="A", module_id=4),
-        Quiz(question="What is a React Component?", options='["A. A Python module", "B. A building block of a React app", "C. A CSS framework"]', correct_answer="B", module_id=5),
-        Quiz(question="What is a variable in Python?", options='["A. A fixed value", "B. A container for storing data values", "C. A type of function"]', correct_answer="B", module_id=6),
-        Quiz(question="What is JavaScript?", options='["A. A type of database", "B. A programming language for web development", "C. A data storage format"]', correct_answer="B", module_id=2),
-        Quiz(question="What does CSS stand for?", options='["A. Cascading Style Sheets", "B. Creative Style Systems", "C. Computer Style Syntax"]', correct_answer="A", module_id=2),
-        Quiz(question="Which language is used for web development?", options='["A. Python", "B. JavaScript", "C. SQL"]', correct_answer="B", module_id=2),
-        Quiz(question="What is Python used for?", options='["A. Data analysis", "B. Web development", "C. All of the above"]', correct_answer="C", module_id=6),
-        Quiz(question="What is an API?", options='["A. Application Programming Interface", "B. Application Public Internet", "C. Advanced Protocol Integration"]', correct_answer="A", module_id=1),
-        Quiz(question="What is SQL?", options='["A. Structured Query Language", "B. Simple Query Language", "C. Server Query Language"]', correct_answer="A", module_id=3),
-        Quiz(question="What is a module in programming?", options='["A. A small device", "B. A reusable piece of code", "C. A variable type"]', correct_answer="B", module_id=1),
-        Quiz(question="What is Git used for?", options='["A. Data storage", "B. Version control", "C. API management"]', correct_answer="B", module_id=5),
-        Quiz(question="What is React primarily used for?", options='["A. Styling web pages", "B. Building user interfaces", "C. Managing databases"]', correct_answer="B", module_id=5),
-        Quiz(question="In HTML, what tag is used for paragraphs?", options='["A. <div>", "B. <p>", "C. <section>"]', correct_answer="B", module_id=2),
-        Quiz(question="Which symbol is used for comments in Python?", options='["A. //", "B. #", "C. <!-- -->"]', correct_answer="B", module_id=6),
-        Quiz(question="What is the purpose of CSS?", options='["A. Add functionality to websites", "B. Style web pages", "C. Store data"]', correct_answer="B", module_id=2),
-        Quiz(question="What is a dataset?", options='["A. A collection of data", "B. A code structure", "C. A web tool"]', correct_answer="A", module_id=1),
-        Quiz(question="In Python, what keyword is used to define a function?", options='["A. func", "B. function", "C. def"]', correct_answer="C", module_id=6),
-        Quiz(question="What does ML stand for?", options='["A. Markup Language", "B. Machine Learning", "C. Manual Learning"]', correct_answer="B", module_id=3),
-        Quiz(question="What is a CSS selector?", options='["A. A tool to select files", "B. A rule to apply styles to elements", "C. A JavaScript command"]', correct_answer="B", module_id=2),
-        Quiz(question="What does JSON stand for?", options='["A. Java Syntax Object Notation", "B. JavaScript Object Notation", "C. JavaScript Organized Notation"]', correct_answer="B", module_id=1),
-        Quiz(question="What does IDE stand for?", options='["A. Integrated Development Environment", "B. Interactive Design Engine", "C. Internet Development Emulator"]', correct_answer="A", module_id=6),
-        Quiz(question="What is the purpose of React's useState hook?", options='["A. Add style to components", "B. Manage state within components", "C. Handle form submissions"]', correct_answer="B", module_id=5),
-        Quiz(question="Which symbol is used for assignment in Python?", options='["A. =", "B. ==", "C. ->"]', correct_answer="A", module_id=6),
-        Quiz(question="What type of variable is 'True' in Python?", options='["A. Integer", "B. String", "C. Boolean"]', correct_answer="C", module_id=6),
-        Quiz(question="Which tag is used for a hyperlink in HTML?", options='["A. <link>", "B. <a>", "C. <href>"]', correct_answer="B", module_id=2),
-        Quiz(question="What does the flex property in CSS do?", options='["A. Manages layout", "B. Adds animations", "C. Adjusts font size"]', correct_answer="A", module_id=2),
-        Quiz(question="Which programming language is known for its readability?", options='["A. Java", "B. Python", "C. C++"]', correct_answer="B", module_id=6),
-        Quiz(question="What is the purpose of the `return` keyword in Python?", options='["A. Loops through data", "B. Exits a function", "C. Outputs a result from a function"]', correct_answer="C", module_id=6),
-        Quiz(question="Which framework is popular for building single-page applications?", options='["A. React", "B. Django", "C. SQLAlchemy"]', correct_answer="A", module_id=5),
-        Quiz(question="What is JSX in React?", options='["A. JavaScript Extension", "B. JavaScript XML", "C. JSON Extension"]', correct_answer="B", module_id=5),
-        Quiz(question="What is the purpose of `useEffect` in React?", options='["A. Update CSS", "B. Side effects management", "C. API creation"]', correct_answer="B", module_id=5),
-        Quiz(question="What does SQL stand for?", options='["A. Simple Query Language", "B. Structured Query Language", "C. Standard Query Line"]', correct_answer="B", module_id=3),
-        Quiz(question="What is a dataset in data science?", options='["A. A code snippet", "B. A collection of data", "C. A machine learning tool"]', correct_answer="B", module_id=1),
-        Quiz(question="What is the main purpose of pandas in Python?", options='["A. Data analysis", "B. API management", "C. Web development"]', correct_answer="A", module_id=1),
-        Quiz(question="Which HTML tag is used to create an ordered list?", options='["A. <ol>", "B. <ul>", "C. <li>"]', correct_answer="A", module_id=2),
-        Quiz(question="In CSS, what does 'padding' refer to?", options='["A. Space outside an element", "B. Space inside an element", "C. Elements font size"]', correct_answer="B", module_id=2),
-        Quiz(question="Which function would you use to create a simple plot in Python?", options='["A. plt.scatter", "B. plt.line", "C. plt.plot"]', correct_answer="C", module_id=4),
-        Quiz(question="What is a 'div' element in HTML?", options='["A. Used to style fonts", "B. Container for content", "C. Used for linking"]', correct_answer="B", module_id=2),
-    ]
+    # Award some achievements (basic simulation)
+    users = User.query.all()
+    first_module_badge = Badge.query.filter_by(name="First Steps").first()
+    for user in users:
+        if Progress.query.filter_by(user_id=user.id, completed=True).count() > 0:
+            if not Achievement.query.filter_by(user_id=user.id, badge_id=first_module_badge.id).first():
+                db.session.add(Achievement(user_id=user.id, badge_id=first_module_badge.id))
 
-    db.session.add_all(quizzes)
-    db.session.commit()  
-
-    # Seed progress
-    progresses = [
-        Progress(user_id=1, module_id=1, completed=True),
-        Progress(user_id=2, module_id=2, completed=False),
-        Progress(user_id=3, module_id=3, completed=False),
-        Progress(user_id=4, module_id=4, completed=True),
-        Progress(user_id=5, module_id=5, completed=False),
-        Progress(user_id=6, module_id=6, completed=False)
-    ]
-    db.session.add_all(progresses)
     db.session.commit()
+    print("Badges and achievements seeded.")
 
-    # Seed comments
-    comments = [
-        Comment(content="Great resource!", user_id=1, resource_id=1),
-        Comment(content="Very informative.", user_id=2, resource_id=2),
-        Comment(content="Needs more details.", user_id=3, resource_id=3),
-        Comment(content="Helpful content.", user_id=4, resource_id=4),
-        Comment(content="Good for beginners.", user_id=5, resource_id=5),
-        Comment(content="Could be clearer.", user_id=6, resource_id=6)
-    ]
-    db.session.add_all(comments)
-    db.session.commit()
 
-    # Seed badges
-    badges = [
-        Badge(name="Beginner", description="Completed 1 module", points_required=100),
-        Badge(name="Intermediate", description="Completed 5 modules", points_required=500),
-        Badge(name="Advanced", description="Completed 10 modules", points_required=1000),
-        Badge(name="Expert", description="Completed 20 modules", points_required=2000),
-        Badge(name="Master", description="Completed 30 modules", points_required=3000),
-        Badge(name="Legend", description="Completed 50 modules", points_required=5000)
-    ]
-    db.session.add_all(badges)
-    db.session.commit()
+def run_seed():
+    """Main function to run all seeders."""
+    app = create_app()
+    with app.app_context():
+        print("--- Starting database seeding ---")
+        db.drop_all()
+        db.create_all()
+        
+        seed_roles()
+        seed_users()
+        seed_learning_content()
+        seed_enrollments_and_progress()
+        seed_social_features()
+        seed_gamification()
+        
+        print("--- Database seeded successfully! ---")
 
-    # Seed achievements
-    achievements = [
-        Achievement(user_id=1, badge_id=1),
-        Achievement(user_id=2, badge_id=2),
-        Achievement(user_id=3, badge_id=3),
-        Achievement(user_id=4, badge_id=4),
-        Achievement(user_id=5, badge_id=5),
-        Achievement(user_id=6, badge_id=6)
-    ]
-    db.session.add_all(achievements)
-    db.session.commit()
-
-    # Seed user learning paths
-    user_learning_paths = [
-        UserLearningPath(user_id=1, learning_path_id=1),
-        UserLearningPath(user_id=2, learning_path_id=2),
-        UserLearningPath(user_id=3, learning_path_id=3),
-        UserLearningPath(user_id=4, learning_path_id=4),
-        UserLearningPath(user_id=5, learning_path_id=5),
-        UserLearningPath(user_id=6, learning_path_id=6)
-    ]
-    db.session.add_all(user_learning_paths)
-    db.session.commit()
-
-    # # Commit the changes
-    # db.session.commit()
-
-print("Database seeded successfully.")
+if __name__ == "__main__":
+    run_seed()

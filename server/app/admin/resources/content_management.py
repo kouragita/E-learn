@@ -3,7 +3,7 @@ from flask import request, jsonify, current_app
 from app.models import db
 from app.models.learning_path import LearningPath
 from app.models.module import Module
-from app.models.resource import Resource
+from app.models.resource import Resource as ResourceModel
 from app.schemas.learning_path_schema import LearningPathSchema
 from app.schemas.module_schema import ModuleSchema
 from app.schemas.resource_schema import ResourceSchema
@@ -113,7 +113,7 @@ class AdminResourceListResource(Resource):
             folder = f"elearn/modules/{args.module_id}/resources"
             cloudinary_result = CloudinaryService.upload_file(file, folder=folder)
         
-        resource = Resource(
+        resource = ResourceModel(
             title=args.title,
             module_id=args.module_id,
             type=args.type,
@@ -140,7 +140,7 @@ class AdminModuleResourcesResource(Resource):
 class AdminResourceResource(Resource):
     method_decorators = [admin_required()]
     def delete(self, resource_id):
-        resource = Resource.query.get_or_404(resource_id)
+        resource = ResourceModel.query.get_or_404(resource_id)
         if resource.cloudinary_public_id:
             try:
                 CloudinaryService.delete_file(resource.cloudinary_public_id, resource.type)

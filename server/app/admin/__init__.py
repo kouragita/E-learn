@@ -1,9 +1,8 @@
 from flask import Blueprint
-from app import api
 
 admin_bp = Blueprint('admin_api', __name__)
 
-def register_admin_routes():
+def register_admin_routes(api):
     from .resources.content_management import (
         AdminLearningPathListResource, AdminLearningPathResource,
         AdminModuleListResource, AdminModuleResource,

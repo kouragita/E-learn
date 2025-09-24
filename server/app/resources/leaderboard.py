@@ -19,7 +19,7 @@ class LeaderboardResource(Resource):
                 User.username.label('username'),
                 UserProfile.avatar_url.label('avatar_url'),
                 func.coalesce(func.sum(Badge.points_required), 0).label('total_points'),
-                func.array_agg(Badge.name).label('badges_earned')
+                func.GROUP_CONCAT(Badge.name).label('badges_earned')
             )
             .join(Achievement, Achievement.user_id == User.id)  # Join on achievements
             .join(Badge, Achievement.badge_id == Badge.id)  # Join on badges
@@ -36,7 +36,7 @@ class LeaderboardResource(Resource):
                 "username": user.username,
                 "avatar_url": user.avatar_url,
                 "total_points": user.total_points,
-                "badges": user.badges_earned
+                "badges": user.badges_earned.split(',') if user.badges_earned else []
             }
             for user in leaderboard_query
         ]

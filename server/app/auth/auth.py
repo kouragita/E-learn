@@ -28,13 +28,22 @@ def signup_user():
     # Extract optional fields
     first_name = data.get('first_name', '')
     last_name = data.get('last_name', '')
+    role_name = data.get('role', 'learner') # Default to learner
 
-    # Assign default role (Learner) if no role is provided
+    # Determine role_id and status based on role_name
+    if role_name.lower() == 'contributor':
+        role_id = 2  # Contributor role
+        status = 'pending'
+    else:
+        role_id = 3  # Learner role
+        status = 'active'
+
     new_user = User(
         username=data['username'],
         password=hashed_password,
         email=data['email'],
-        role_id=3  # Default role for Learner
+        role_id=role_id,
+        status=status
     )
     db.session.add(new_user)
     db.session.commit()
@@ -51,6 +60,7 @@ def signup_user():
             "username": new_user.username,
             "email": new_user.email,
             "role_id": new_user.role_id,
+            "status": new_user.status, # Add status to response
             "role": "student",
             "total_points": 0,
             "current_streak": 0,
