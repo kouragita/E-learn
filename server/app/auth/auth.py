@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models.user import User
+from app.schemas.user_schema import UserSchema
 from app import db
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from datetime import datetime
@@ -51,30 +52,17 @@ def signup_user():
     db.session.commit()
 
     # Determine role name for response
-    role_map = {1: "admin", 2: "contributor", 3: "student"}
-    role_name = role_map.get(new_user.role_id, "student")
-    
+    role_map = {1: "admin", 2: "contributor", 3: "learner"}
+    role_name = role_map.get(new_user.role_id, "learner")    
     # Generate JWT token for auto-login after signup
     additional_claims = {"role": new_user.role_id}
     token = create_access_token(identity=new_user.id, additional_claims=additional_claims)
+    user_schema = UserSchema()
 
     return jsonify({
         "message": "User created successfully",
         "token": token,
-        "user": {
-            "id": new_user.id,
-            "username": new_user.username,
-            "email": new_user.email,
-            "role_id": new_user.role_id,
-            "status": new_user.status, # Add status to response
-            "role": role_name,
-            "total_points": 0,
-            "current_streak": 0,
-            "badges": [],
-            "profile_picture": None,
-            "first_name": first_name,
-            "last_name": last_name
-        }
+        "user": user_schema.dump(new_user)
     }), 201
 
 
@@ -96,25 +84,12 @@ def login_user():
         # Generate JWT token with user role and expiration
         additional_claims = {"role": user.role_id}
         token = create_access_token(identity=user.id, additional_claims=additional_claims)
-        
-        # Map role_id to role name - maintaining consistency with signup
-        role_map = {1: "admin", 2: "contributor", 3: "student"}
-        role_name = role_map.get(user.role_id, "student")
+        user_schema = UserSchema()
         
         return jsonify({
             "message": "Login successful",
             "token": token,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role_id": user.role_id,
-                "role": role_name,
-                "total_points": 0,
-                "current_streak": 0,
-                "badges": [],
-                "profile_picture": None
-            }
+            "user": user_schema.dump(user)
         }), 200
 
     return jsonify({"message": "Invalid credentials"}), 401

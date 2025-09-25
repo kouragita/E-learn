@@ -8,20 +8,25 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from flask_restful import Api
 
-# Initialize extensions
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 jwt = JWTManager()
 
 def create_app():
-    app = Flask(__name__)
-    api = Api(app)  # Create and bind Api object here
-    
-    # Load configuration from config.py or another configuration file
+    app = Flask(__name__, instance_relative_config=True)
+    api = Api(app)
+
+    # Load configuration from config.py
     app.config.from_object('app.config.Config')
-    
-    # Initialize other extensions with the app
+
+    # Ensure the instance folder exists
+    try:
+        os.makedirs(app.instance_path)
+    except OSError:
+        pass
+
+    # Initialize extensions with the app
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)

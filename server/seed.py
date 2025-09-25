@@ -1,7 +1,14 @@
-
+import os
 import random
+import argparse
 from faker import Faker
 from app import create_app, db
+
+# Ensure the instance folder exists before other imports
+instance_path = os.path.join(os.path.dirname(__file__), 'instance')
+if not os.path.exists(instance_path):
+    os.makedirs(instance_path)
+
 from app.models import (
     User, UserProfile, Role, LearningPath, Module, Resource, Quiz,
     Progress, Comment, Rating, Badge, Achievement, UserLearningPath
@@ -17,9 +24,9 @@ def seed_roles():
 
     print("Seeding roles...")
     roles = [
-        {"name": "Admin", "description": "Platform administrator with full access."},
-        {"name": "Contributor", "description": "Can create, edit, and manage their own learning content."},
-        {"name": "Learner", "description": "Can enroll in and consume learning content."}
+        {"id": 1, "name": "Admin", "description": "Platform administrator with full access."},
+        {"id": 2, "name": "Contributor", "description": "Can create, edit, and manage their own learning content."},
+        {"id": 3, "name": "Learner", "description": "Can enroll in and consume learning content."}
     ]
     for role_data in roles:
         role = Role(**role_data)
@@ -27,73 +34,63 @@ def seed_roles():
     db.session.commit()
     print("Roles seeded.")
 
-def seed_users(num_users=20):
-    """Seeds users with different roles."""
-    if User.query.count() > 1:
+def seed_users():
+    """Seeds specific, predictable users for admin, contributor, and learner roles."""
+    if User.query.count() > 0:
+        print("Users table is not empty, skipping user seeding.")
         return
 
-    print(f"Seeding {num_users} users...")
+    print("Seeding predictable users (admin, contributor, learner)...")
     admin_role = Role.query.filter_by(name="Admin").first()
     contributor_role = Role.query.filter_by(name="Contributor").first()
     learner_role = Role.query.filter_by(name="Learner").first()
 
-    # Create a specific admin for easy login
-    admin_user = User(
-        username="admin",
-        email="admin@elearn.com",
-        password=generate_password_hash("admin", method='pbkdf2:sha256'),
-        role_id=admin_role.id
-    )
-    db.session.add(admin_user)
-    db.session.commit()
-    user_profile = UserProfile(user_id=admin_user.id, bio="E-learn Platform Administrator", points=100, xp=200)
-    db.session.add(user_profile)
+    users_to_create = [
+        {
+            'username': 'admin', 'email': 'admin@elearn.com',
+            'password': 'password', 'role_id': admin_role.id
+        },
+        {
+            'username': 'contributor', 'email': 'contributor@elearn.com',
+            'password': 'password', 'role_id': contributor_role.id
+        },
+        {
+            'username': 'learner', 'email': 'learner@elearn.com',
+            'password': 'password', 'role_id': learner_role.id
+        }
+    ]
 
-    # Create other users
-    for i in range(num_users - 1):
-        role = random.choices(
-            [admin_role, contributor_role, learner_role],
-            weights=[0.1, 0.3, 0.6],
-            k=1
-        )[0]
-        
-        username = fake.unique.user_name()
+    for user_data in users_to_create:
         user = User(
-            username=username,
-            email=fake.unique.email(),
-            password=generate_password_hash("password", method='pbkdf2:sha256'),
-            role_id=role.id
+            username=user_data['username'],
+            email=user_data['email'],
+            password=generate_password_hash(user_data['password'], method='pbkdf2:sha256'),
+            role_id=user_data['role_id']
         )
         db.session.add(user)
-        db.session.commit() # Commit to get user ID for profile
-        
-        user_profile = UserProfile(
-            user_id=user.id,
-            bio=fake.sentence(nb_words=10),
-            points=random.randint(0, 1000),
-            xp=random.randint(0, 5000)
-        )
+        db.session.commit()
+        user_profile = UserProfile(user_id=user.id, bio=f"Default bio for {user_data['username']}.")
         db.session.add(user_profile)
-
+    
     db.session.commit()
-    print("Users and profiles seeded.")
+    print("Predictable users and profiles seeded.")
 
 def seed_learning_content(num_paths=5, modules_per_path=4, resources_per_module=3):
-    """Seeds learning paths, modules, resources, and quizzes."""
+    """Seeds learning paths and assigns them to the specific contributor user."""
     if LearningPath.query.first():
         return
 
     print("Seeding learning content...")
-    contributors = User.query.join(Role).filter(Role.name == "Contributor").all()
-    if not contributors:
-        print("No contributors found to create content. Aborting content seeding.")
+    contributor = User.query.filter_by(username="contributor").first()
+    if not contributor:
+        print("Could not find the 'contributor' user. Aborting content seeding.")
         return
 
     for _ in range(num_paths):
         path = LearningPath(
             title=fake.catch_phrase(),
             description=fake.paragraph(nb_sentences=3),
-            contributor_id=random.choice(contributors).id,
+            contributor_id=contributor.id,
             category=random.choice(["Tech", "Business", "Arts", "Science", "Health"]),
             difficulty_level=random.choice(["Beginner", "Intermediate", "Advanced"])
         )
@@ -121,7 +118,6 @@ def seed_learning_content(num_paths=5, modules_per_path=4, resources_per_module=
                 )
                 db.session.add(resource)
 
-            # Add a quiz to each module
             quiz = Quiz(
                 question=f"What is the key concept of Module {i+1}?",
                 options='["Concept A", "Concept B", "Concept C"]',
@@ -133,28 +129,25 @@ def seed_learning_content(num_paths=5, modules_per_path=4, resources_per_module=
     db.session.commit()
     print("Learning paths, modules, resources, and quizzes seeded.")
 
-def seed_enrollments_and_progress(num_enrollments=30):
-    """Seeds user enrollments in learning paths and simulates progress."""
+def seed_enrollments_and_progress():
+    """Seeds enrollments and progress for the specific learner user."""
     if UserLearningPath.query.first():
         return
 
-    print("Seeding user enrollments and progress...")
-    users = User.query.all()
+    print("Seeding enrollments and progress for the learner user...")
+    learner = User.query.filter_by(username="learner").first()
     paths = LearningPath.query.all()
 
-    for _ in range(num_enrollments):
-        user = random.choice(users)
-        path = random.choice(paths)
+    if not learner or not paths:
+        print("Learner or Learning Paths not found. Aborting enrollment seeding.")
+        return
 
-        # Avoid duplicate enrollments
-        if UserLearningPath.query.filter_by(user_id=user.id, learning_path_id=path.id).first():
-            continue
-
-        enrollment = UserLearningPath(user_id=user.id, learning_path_id=path.id)
+    paths_to_enroll = random.sample(paths, min(len(paths), 3))
+    for path in paths_to_enroll:
+        enrollment = UserLearningPath(user_id=learner.id, learning_path_id=path.id)
         db.session.add(enrollment)
         db.session.commit()
 
-        # Simulate progress
         modules_in_path = Module.query.filter_by(learning_path_id=path.id).all()
         if not modules_in_path:
             continue
@@ -164,7 +157,7 @@ def seed_enrollments_and_progress(num_enrollments=30):
 
         for module in completed_modules:
             progress = Progress(
-                user_id=user.id,
+                user_id=learner.id,
                 module_id=module.id,
                 completed=True,
                 completion_date=fake.date_time_this_year()
@@ -172,7 +165,7 @@ def seed_enrollments_and_progress(num_enrollments=30):
             db.session.add(progress)
     
     db.session.commit()
-    print("User enrollments and progress seeded.")
+    print("Learner enrollments and progress seeded.")
 
 def seed_social_features(num_comments=50, num_ratings=100):
     """Seeds comments and ratings."""
@@ -192,7 +185,6 @@ def seed_social_features(num_comments=50, num_ratings=100):
         db.session.add(comment)
 
     for _ in range(num_ratings):
-        # Avoid duplicate ratings
         user = random.choice(users)
         resource = random.choice(resources)
         if Rating.query.filter_by(user_id=user.id, resource_id=resource.id).first():
@@ -226,7 +218,6 @@ def seed_gamification():
         db.session.add(badge)
     db.session.commit()
 
-    # Award some achievements (basic simulation)
     users = User.query.all()
     first_module_badge = Badge.query.filter_by(name="First Steps").first()
     for user in users:
@@ -236,9 +227,6 @@ def seed_gamification():
 
     db.session.commit()
     print("Badges and achievements seeded.")
-
-
-import argparse
 
 def run_specific_seed(seed_function):
     """Runs a specific seeding function within the app context."""
@@ -268,6 +256,7 @@ def run_full_seed():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Seed the E-learn database.')
     parser.add_argument('--seed', type=str, help='Specify a seeder to run (e.g., roles, users). Default is full seed.')
+    parser.add_argument('--full', action='store_true', help='Run the full seed, wiping the database.')
 
     args = parser.parse_args()
 
@@ -280,14 +269,12 @@ if __name__ == "__main__":
         'gamification': seed_gamification
     }
 
-    if args.seed:
+    if args.full:
+        run_full_seed()
+    elif args.seed:
         if args.seed in seed_map:
             run_specific_seed(seed_map[args.seed])
         else:
             print(f"Error: Seeder '{args.seed}' not found. Available seeders: {list(seed_map.keys())}")
     else:
-        print("Warning: No specific seeder chosen. Running full seed, which will wipe the database.")
-        if input("Are you sure you want to continue? (y/n): ").lower() == 'y':
-            run_full_seed()
-        else:
-            print("Aborted.")
+        print("No operation chosen. Use --seed <name> for a specific seeder or --full to wipe and seed everything.")

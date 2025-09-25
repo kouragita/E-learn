@@ -1,40 +1,51 @@
-# Central repository for all AI prompt templates.
-# This creative approach allows for easy editing, versioning, and refinement of prompts
-# without changing the core application logic.
+"""
+Stores prompt templates for interacting with the Groq LLM.
+"""
 
-class PromptTemplates:
-    # For Personalized Learning Path Recommendations
-    RECOMMEND_PATHS = """
-    SYSTEM: You are an expert academic advisor for a diverse e-learning platform.
-    Your goal is to recommend the next best learning paths for a user based on their progress and the platform's catalog.
-    Analyze the user's completed paths and the list of available paths.
-    Provide a ranked list of the top 3 recommendations in a valid, parseable JSON array of objects.
-    Each object must contain 'path_id', 'reason' (a short, encouraging sentence explaining why it's a good fit), and a 'confidence' score (0.0 to 1.0).
-    Do not include any explanations or text outside of the JSON array.
+COURSE_RECOMMENDATION_PROMPT = """
+Based on the user's learning history and the available courses, please recommend the top 3 most relevant courses for them to take next.
 
-    USER_PROFILE:
-    - Completed Learning Paths: {completed_paths}
+**User's Completed Courses:**
+{completed_courses}
 
-    AVAILABLE_CATALOG:
-    {available_paths}
+**All Available Courses:**
+{available_courses}
 
-    ASSISTANT:
-    """
+Respond with ONLY a comma-separated list of the recommended course titles. For example: Course A, Course B, Course C
+"""
 
-    # For Automated Quiz Generation
-    GENERATE_QUIZ = """
-    SYSTEM: You are a skilled educator and quiz creator.
-    Your task is to generate a multiple-choice quiz based on the provided text content.
-    Create {num_questions} questions.
-    For each question, provide 4 options, with one being the correct answer.
-    Return the quiz as a valid, parseable JSON array of objects.
-    Each object must contain 'question', 'options' (an array of 4 strings), and 'correct_answer' (the string of the correct option).
-    Do not include any explanations or text outside of the JSON array.
+AI_TUTOR_PROMPT = """
+You are a helpful and encouraging AI Tutor. Given the following context from a lesson the user is currently studying, please answer the user's question clearly and concisely. If the question is outside the provided context, politely state that you can only answer questions related to the lesson material.
 
-    CONTENT:
-    {content}
+**Lesson Context:**
+---
+{context}
+---
 
-    ASSISTANT:
-    """
+**User's Question:** {question}
+"""
 
-    # Add other templates for tutoring, summarization, etc. here
+QUIZ_GENERATION_PROMPT = """
+You are an expert instructional designer. Based on the following content, generate a JSON object containing a list of {num_questions} multiple-choice quiz questions. Each question should be an object with "question", a list of "options", and the "correct_answer". Ensure the correct answer is one of the options.
+
+**Content to analyze:**
+---
+{content}
+---
+
+Respond with ONLY the raw JSON object.
+"""
+
+CONTENT_REVIEW_PROMPT = """
+You are an AI Quality Assurance assistant for an e-learning platform. Review the following content submitted by a contributor. Provide a brief, constructive analysis covering these points:
+1.  **Clarity:** Is the explanation clear and easy to understand?
+2.  **Accuracy:** Are there any potential factual inaccuracies? (If you are unsure, state that.)
+3.  **Engagement:** Is the content engaging? Suggest one way to make it more interactive.
+
+Format your response as a simple JSON object with keys "clarity", "accuracy", and "engagement".
+
+**Content to review:**
+---
+{content}
+---
+"""

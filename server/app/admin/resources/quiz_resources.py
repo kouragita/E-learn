@@ -4,24 +4,24 @@ from app.models import db
 from app.models.quiz import Quiz
 from app.schemas.quiz_schema import QuizSchema
 from app.auth.decorators import admin_required
-from app.ai.ai_service import AIService
+# from app.ai.ai_service import AIService
 
 quiz_schema = QuizSchema()
 quizzes_schema = QuizSchema(many=True)
 
-class AIQuizGenerateResource(Resource):
-    method_decorators = [admin_required()]
-    def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('content', type=str, required=True)
-        parser.add_argument('num_questions', type=int, default=5)
-        data = parser.parse_args()
-        try:
-            service = AIService()
-            quiz_data = service.generate_quiz(data['content'], data['num_questions'])
-            return quiz_data, 200
-        except Exception as e:
-            return {"message": f"Failed to generate quiz: {str(e)}"}, 500
+# class AIQuizGenerateResource(Resource):
+#     method_decorators = [admin_required()]
+#     def post(self):
+#         parser = reqparse.RequestParser()
+#         parser.add_argument('content', type=str, required=True)
+#         parser.add_argument('num_questions', type=int, default=5)
+#         data = parser.parse_args()
+#         try:
+#             service = AIService()
+#             quiz_data = service.generate_quiz(data['content'], data['num_questions'])
+#             return quiz_data, 200
+#         except Exception as e:
+#             return {"message": f"Failed to generate quiz: {str(e)}"}, 500
 
 class AdminQuizListResource(Resource):
     method_decorators = [admin_required()]

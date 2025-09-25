@@ -8,6 +8,7 @@ class ModuleSchema(SQLAlchemySchema):
         model = Module
         load_instance = True
         include_fk = True
+        fields = ("id", "title", "description", "order_index", "status", "created_at", "updated_at", "resources")
 
     id = auto_field(dump_only=True)
     title = auto_field(required=True)

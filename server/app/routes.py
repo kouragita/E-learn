@@ -14,14 +14,16 @@ from app.resources.badge import BadgeResource, BadgeListResource
 from app.resources.achievement import AchievementResource, AchievementListResource
 from app.resources.progress import ProgressResource, ProgressListResource
 from app.resources.profile import ProfileResource
+from app.resources.user_specific import EnrolledPathsResource, AuthoredPathsResource
 from app.callbacks.africastalking_routes import AfricasTalkingCallback
-from app.resources.ai_resources import RecommendationsResource
+from app.resources.ai_resources import RecommendationsResource, ContentGenerationResource, AITutorResource
+from app.resources.upload import FileUploadResource
 from app.auth.auth import auth_bp
 
 def register_routes(app, api):
     # Register the auth blueprint for authentication-related routes with a separate prefix
     if 'auth' not in app.blueprints:
-        app.register_blueprint(auth_bp, url_prefix='/auth')
+        app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
     # Register public API resource routes
     api.add_resource(UserRegistrationResource, '/api/register')
@@ -54,5 +56,15 @@ def register_routes(app, api):
     api.add_resource(ProgressListResource, '/api/progress')
     api.add_resource(ProgressResource, '/api/progress/<int:progress_id>')
     api.add_resource(ProfileResource, '/api/profile')
+
+    # User-specific routes
+    api.add_resource(EnrolledPathsResource, '/api/users/me/enrolled-paths')
+    api.add_resource(AuthoredPathsResource, '/api/users/me/authored-paths')
+
     api.add_resource(AfricasTalkingCallback, '/api/callbacks/africas-talking')
     api.add_resource(RecommendationsResource, '/api/ai/recommendations')
+    api.add_resource(ContentGenerationResource, '/api/ai/generate-content')
+    api.add_resource(AITutorResource, '/api/ai/tutor')
+
+    # File Upload
+    api.add_resource(FileUploadResource, '/api/upload')

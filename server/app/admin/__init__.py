@@ -10,8 +10,9 @@ def register_admin_routes(api):
         AdminLearningPathModulesResource, AdminModuleResourcesResource
     )
     from .resources.upload import AdminUploadSignatureResource
-    from .resources.quiz_resources import AdminQuizListResource, AdminQuizResource, AIQuizGenerateResource
+    from .resources.quiz_resources import AdminQuizListResource, AdminQuizResource #, AIQuizGenerateResource
     from .resources.integrations import UssdLogsResource, SmsLogsResource, SmsBroadcastResource
+    from .resources.ai_admin_resources import AdminContentReviewResource
 
     # Admin Routes
     api.add_resource(AdminLearningPathListResource, '/api/admin/learning_paths')
@@ -28,9 +29,12 @@ def register_admin_routes(api):
     # Quiz Routes
     api.add_resource(AdminQuizListResource, '/api/admin/modules/<int:module_id>/quizzes')
     api.add_resource(AdminQuizResource, '/api/admin/quizzes/<int:quiz_id>')
-    api.add_resource(AIQuizGenerateResource, '/api/admin/ai/generate-quiz')
+    # api.add_resource(AIQuizGenerateResource, '/api/admin/ai/generate-quiz')
 
     # Integrations Routes
     api.add_resource(UssdLogsResource, '/api/admin/integrations/ussd-logs')
     api.add_resource(SmsLogsResource, '/api/admin/integrations/sms-logs')
     api.add_resource(SmsBroadcastResource, '/api/admin/integrations/broadcast')
+
+    # Admin AI Routes
+    api.add_resource(AdminContentReviewResource, '/api/admin/ai/review-content')

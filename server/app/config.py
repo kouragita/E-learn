@@ -4,9 +4,11 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 class Config:
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///dev.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, '../instance/dev.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', 'False').lower() == 'true'
     SECRET_KEY = os.getenv('SECRET_KEY')
     JWT_SECRET_KEY = os.getenv('SECRET_KEY')

@@ -13,9 +13,4 @@ class ProfileResource(Resource):
         if not user:
             return {"message": "User not found"}, 404
         
-        # Manually add role name to the serialized user data
-        user_data = user_schema.dump(user)
-        role_map = {1: "admin", 2: "instructor", 3: "student"}
-        user_data['role'] = role_map.get(user.role_id, "student")
-
-        return user_data, 200
+        return user_schema.dump(user), 200
