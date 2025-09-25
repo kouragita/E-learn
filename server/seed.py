@@ -238,11 +238,21 @@ def seed_gamification():
     print("Badges and achievements seeded.")
 
 
-def run_seed():
-    """Main function to run all seeders."""
+import argparse
+
+def run_specific_seed(seed_function):
+    """Runs a specific seeding function within the app context."""
     app = create_app()
     with app.app_context():
-        print("--- Starting database seeding ---")
+        print(f"--- Running seeder: {seed_function.__name__} ---")
+        seed_function()
+        print(f"--- Seeder {seed_function.__name__} finished ---")
+
+def run_full_seed():
+    """Main function to run all seeders, wiping the database first."""
+    app = create_app()
+    with app.app_context():
+        print("--- Starting full database seeding (WIPING DATABASE) ---")
         db.drop_all()
         db.create_all()
         
@@ -256,4 +266,28 @@ def run_seed():
         print("--- Database seeded successfully! ---")
 
 if __name__ == "__main__":
-    run_seed()
+    parser = argparse.ArgumentParser(description='Seed the E-learn database.')
+    parser.add_argument('--seed', type=str, help='Specify a seeder to run (e.g., roles, users). Default is full seed.')
+
+    args = parser.parse_args()
+
+    seed_map = {
+        'roles': seed_roles,
+        'users': seed_users,
+        'content': seed_learning_content,
+        'enrollments': seed_enrollments_and_progress,
+        'social': seed_social_features,
+        'gamification': seed_gamification
+    }
+
+    if args.seed:
+        if args.seed in seed_map:
+            run_specific_seed(seed_map[args.seed])
+        else:
+            print(f"Error: Seeder '{args.seed}' not found. Available seeders: {list(seed_map.keys())}")
+    else:
+        print("Warning: No specific seeder chosen. Running full seed, which will wipe the database.")
+        if input("Are you sure you want to continue? (y/n): ").lower() == 'y':
+            run_full_seed()
+        else:
+            print("Aborted.")

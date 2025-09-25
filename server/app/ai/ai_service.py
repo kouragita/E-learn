@@ -1,6 +1,7 @@
 from .groq_client import GroqClient
 from .prompt_templates import PromptTemplates
 from app.models import LearningPath, User, Progress
+from app import db
 import json
 
 class AIService:

@@ -2,7 +2,7 @@ from flask import Blueprint
 from app.resources.leaderboard import LeaderboardResource
 from app.resources.userlearning_path import UserLearningPathResource, UserLearningPathListResource
 from app.resources.user_profile import UserProfileResource, UserProfileListResource
-from app.resources.user import UserResource, UserListResource
+from app.resources.user import UserResource, UserListResource, UserRegistrationResource
 from app.resources.role import RoleResource, RoleListResource
 from app.resources.learning_path import LearningPathResource, LearningPathListResource, LearningPathModulesResource
 from app.resources.module import ModuleResource, ModuleListResource
@@ -24,6 +24,7 @@ def register_routes(app, api):
         app.register_blueprint(auth_bp, url_prefix='/auth')
 
     # Register public API resource routes
+    api.add_resource(UserRegistrationResource, '/api/register')
     api.add_resource(LeaderboardResource, '/api/leaderboard')
     api.add_resource(UserListResource, '/api/users')
     api.add_resource(UserResource, '/api/users/<int:user_id>')

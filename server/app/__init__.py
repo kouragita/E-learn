@@ -5,6 +5,7 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from datetime import timedelta
 from flask_restful import Api
 
 # Initialize extensions
@@ -24,7 +25,19 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
-    jwt.init_app(app)
+    # Configure Flask-JWT-Extended
+    app.config["JWT_SECRET_KEY"] = app.config.get("SECRET_KEY")
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+    app.config["JWT_BLOCKLIST_ENABLED"] = True
+    app.config["JWT_BLOCKLIST_TOKEN_CHECKS"] = ["access"]
+    jwt = JWTManager(app)
+
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):
+        from app.models.token_blocklist import TokenBlocklist
+        jti = jwt_payload["jti"]
+        token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+        return token is not None
     
     # Get allowed origins from environment variable, split by comma
     origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
